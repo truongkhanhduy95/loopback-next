@@ -27,6 +27,7 @@ packages/repository-tests/* @bajtos
 packages/repository-json-schema/* @bajtos
 packages/rest/* @bajtos @raymondfeng
 packages/service-proxy/* @raymondfeng
+packages/socketio/* @raymondfeng
 packages/testlab/* @bajtos
 packages/tsdocs/* @raymondfeng
 examples/todo/* @bajtos @hacksparrow
