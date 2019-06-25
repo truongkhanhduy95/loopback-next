@@ -56,15 +56,17 @@ export function createHasManyRepositoryFactory<
   };
 }
 
-type HasManyResolvedDefinition = HasManyDefinition & {keyTo: string};
+// FIXME(bajtos) is it a good idea to expose this type in public API?
+export type HasManyResolvedDefinition = HasManyDefinition & {keyTo: string};
 
+// FIXME(bajtos) is it a good idea to expose this type in public API?
 /**
  * Resolves given hasMany metadata if target is specified to be a resolver.
  * Mainly used to infer what the `keyTo` property should be from the target's
  * belongsTo metadata
  * @param relationMeta - hasMany metadata to resolve
  */
-function resolveHasManyMetadata(
+export function resolveHasManyMetadata(
   relationMeta: HasManyDefinition,
 ): HasManyResolvedDefinition {
   if (!isTypeResolver(relationMeta.target)) {
@@ -96,7 +98,9 @@ function resolveHasManyMetadata(
     targetModel.definition.properties[defaultFkName];
 
   if (!hasDefaultFkProperty) {
-    const reason = `target model ${targetModel.name} is missing definition of foreign key ${defaultFkName}`;
+    const reason = `target model ${
+      targetModel.name
+    } is missing definition of foreign key ${defaultFkName}`;
     throw new InvalidRelationError(reason, relationMeta);
   }
 
