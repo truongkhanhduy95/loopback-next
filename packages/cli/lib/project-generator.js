@@ -7,6 +7,7 @@
 const BaseGenerator = require('./base-generator');
 const utils = require('./utils');
 const chalk = require('chalk');
+const path = require('path');
 
 module.exports = class ProjectGenerator extends BaseGenerator {
   // Note: arguments and options should be defined in the constructor.
@@ -131,7 +132,8 @@ module.exports = class ProjectGenerator extends BaseGenerator {
         name: 'name',
         message: 'Project name:',
         when: this.projectInfo.name == null,
-        default: this.options.name || this.appname,
+        default:
+          this.options.name || utils.toFileName(path.basename(process.cwd())),
         validate: utils.validate,
       },
       {
