@@ -60,9 +60,7 @@ export function resolveHasOneMetadata(
     targetModel.definition.properties[defaultFkName];
 
   if (!hasDefaultFkProperty) {
-    const reason = `target model ${
-      targetModel.name
-    } is missing definition of foreign key ${defaultFkName}`;
+    const reason = `target model ${targetModel.name} is missing definition of foreign key ${defaultFkName}`;
     throw new InvalidRelationError(reason, relationMeta);
   }
 
