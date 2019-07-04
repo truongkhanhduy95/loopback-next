@@ -14,7 +14,10 @@ const debug = debugFactory('loopback:repository:has-many-repository-factory');
 /**
  * @internal
  */
-export type HasManyResolvedDefinition = HasManyDefinition & {keyTo: string};
+export type HasManyResolvedDefinition = HasManyDefinition & {
+  keyFrom: string;
+  keyTo: string;
+};
 
 /**
  * Resolves given hasMany metadata if target is specified to be a resolver.
@@ -36,15 +39,18 @@ export function resolveHasManyMetadata(
     throw new InvalidRelationError(reason, relationMeta);
   }
 
-  if (relationMeta.keyTo) {
-    // The explict cast is needed because of a limitation of type inference
-    return relationMeta as HasManyResolvedDefinition;
-  }
-
   const sourceModel = relationMeta.source;
   if (!sourceModel || !sourceModel.modelName) {
     const reason = 'source model must be defined';
     throw new InvalidRelationError(reason, relationMeta);
+  }
+
+  // TODO(bajtos) add test coverage (when keyTo is and is not set)
+  const keyFrom = sourceModel.getIdProperties()[0];
+
+  if (relationMeta.keyTo) {
+    // The explict cast is needed because of a limitation of type inference
+    return Object.assign(relationMeta, {keyFrom}) as HasManyResolvedDefinition;
   }
 
   const targetModel = relationMeta.target();
@@ -64,5 +70,5 @@ export function resolveHasManyMetadata(
     throw new InvalidRelationError(reason, relationMeta);
   }
 
-  return Object.assign(relationMeta, {keyTo: defaultFkName});
+  return Object.assign(relationMeta, {keyFrom, keyTo: defaultFkName});
 }

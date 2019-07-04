@@ -14,7 +14,10 @@ const debug = debugFactory('loopback:repository:has-one-helpers');
 /**
  * @internal
  */
-export type HasOneResolvedDefinition = HasOneDefinition & {keyTo: string};
+export type HasOneResolvedDefinition = HasOneDefinition & {
+  keyFrom: string;
+  keyTo: string;
+};
 
 /**
  * Resolves given hasOne metadata if target is specified to be a resolver.
@@ -36,15 +39,18 @@ export function resolveHasOneMetadata(
     throw new InvalidRelationError(reason, relationMeta);
   }
 
-  if (relationMeta.keyTo) {
-    // The explict cast is needed because of a limitation of type inference
-    return relationMeta as HasOneResolvedDefinition;
-  }
-
   const sourceModel = relationMeta.source;
   if (!sourceModel || !sourceModel.modelName) {
     const reason = 'source model must be defined';
     throw new InvalidRelationError(reason, relationMeta);
+  }
+
+  // TODO(bajtos) add test coverage (when keyTo is and is not set)
+  const keyFrom = sourceModel.getIdProperties()[0];
+
+  if (relationMeta.keyTo) {
+    // The explict cast is needed because of a limitation of type inference
+    return Object.assign(relationMeta, {keyFrom}) as HasOneResolvedDefinition;
   }
 
   const targetModel = relationMeta.target();
@@ -64,5 +70,5 @@ export function resolveHasOneMetadata(
     throw new InvalidRelationError(reason, relationMeta);
   }
 
-  return Object.assign(relationMeta, {keyTo: defaultFkName});
+  return Object.assign(relationMeta, {keyFrom, keyTo: defaultFkName});
 }
