@@ -264,6 +264,13 @@ export abstract class ValueObject extends Model implements Persistable {}
  */
 export abstract class Entity extends Model implements Persistable {
   /**
+   * Get the name of the identity property (the primary key).
+   */
+  static getIdProperties(): string[] {
+    return this.definition.idProperties();
+  }
+
+  /**
    * Get the identity value for a given entity instance or entity data object.
    *
    * @param entityOrData - The data object for which to determine the identity
@@ -274,7 +281,9 @@ export abstract class Entity extends Model implements Persistable {
       return entityOrData.getId();
     }
 
-    const idName = this.definition.idName();
+    // FIXME(bajtos) add support for composite keys by moving the logic from
+    // prototype.getId() to this place
+    const idName = this.getIdProperties()[0];
     return entityOrData[idName];
   }
 
