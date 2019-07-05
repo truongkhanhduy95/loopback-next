@@ -232,13 +232,27 @@ describe('build-schema', () => {
       expect(key).to.equal('modelPartial');
     });
 
-    it('returns concatenated option names otherwise', () => {
+    it('returns "optional[id,_rev]" when a single option "optional" is set', () => {
+      const key = buildModelCacheKey({optional: ['id', '_rev']});
+      expect(key).to.equal('modelOptional[id,_rev]');
+    });
+
+    it('does not include "optional" in concatenated option names if it is empty', () => {
       const key = buildModelCacheKey({
-        // important: object keys are defined in reverse order
         partial: true,
+        optional: [],
         includeRelations: true,
       });
       expect(key).to.equal('modelPartialWithRelations');
+    });
+
+    it('returns concatenated option names otherwise', () => {
+      const key = buildModelCacheKey({
+        partial: true,
+        optional: ['id', '_rev'],
+        includeRelations: true,
+      });
+      expect(key).to.equal('modelPartialOptional[id,_rev]WithRelations');
     });
   });
 });
