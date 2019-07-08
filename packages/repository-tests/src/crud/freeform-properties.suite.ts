@@ -9,7 +9,7 @@ import {expect, skipIf, toJSON} from '@loopback/testlab';
 import {Suite} from 'mocha';
 import {withCrudCtx} from '../helpers.repository-tests';
 import {
-  CrudConnectorFeatures,
+  CrudFeatures,
   CrudRepositoryCtor,
   CrudTestContext,
   DataSourceOptions,
@@ -18,17 +18,17 @@ import {
 export function freeformPropertiesSuite(
   dataSourceOptions: DataSourceOptions,
   repositoryClass: CrudRepositoryCtor,
-  connectorFeatures: CrudConnectorFeatures,
+  features: CrudFeatures,
 ) {
   skipIf<[(this: Suite) => void], void>(
-    !connectorFeatures.freeFormProperties,
+    !features.freeFormProperties,
     describe,
     'free-form properties (strict: false)',
     () => {
       @model({settings: {strict: false}})
       class Freeform extends Entity {
         @property({
-          type: connectorFeatures.idType,
+          type: features.idType,
           id: true,
           description: 'The unique identifier for a product',
         })

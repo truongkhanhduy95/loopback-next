@@ -16,11 +16,11 @@ import {
 export type DataSourceOptions = Options;
 
 /**
- * List of flags describing connector-specific behavior. These flags
- * are used by the test suite to tweak assertions and skip tests
- * for scenarios not supported by some connectors.
+ * List of flags describing behavior specific to a connector and a repository
+ * class being tested. These flags are used by the test suite to tweak
+ * assertions and skip tests for scenarios not supported by some connectors.
  */
-export interface CrudConnectorFeatures {
+export interface CrudFeatures {
   /**
    * What type is used for auto-generated primary keys?
    * - SQL databases typically use auto-incremented numbers,
@@ -60,6 +60,6 @@ export type CrudRepositoryCtor = new <
 export interface CrudTestContext {
   dataSourceOptions: DataSourceOptions;
   repositoryClass: CrudRepositoryCtor;
-  connectorFeatures: CrudConnectorFeatures;
+  features: CrudFeatures;
   dataSource: juggler.DataSource;
 }

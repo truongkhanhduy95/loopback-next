@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {withCrudCtx} from './helpers.repository-tests';
 import {
-  CrudConnectorFeatures,
+  CrudFeatures,
   CrudRepositoryCtor,
   CrudTestContext,
   DataSourceOptions,
@@ -20,18 +20,19 @@ const debug = debugFactory('loopback:repository-tests');
 type SuiteFn = (
   dataSourceOptions: DataSourceOptions,
   repositoryClass: CrudRepositoryCtor,
-  connectorFeatures: CrudConnectorFeatures,
+  features: CrudFeatures,
 ) => void;
 
 export function crudRepositoryTestSuite(
   dataSourceOptions: DataSourceOptions,
   repositoryClass: CrudRepositoryCtor,
-  connectorFeatures: Partial<CrudConnectorFeatures>,
+  partialFeatures: Partial<CrudFeatures>,
 ) {
-  const features: CrudConnectorFeatures = {
+  const features: CrudFeatures = {
     idType: 'string',
     freeFormProperties: true,
-    ...connectorFeatures,
+    inclusionResolvers: true,
+    ...partialFeatures,
   };
 
   describe('CRUD Repository operations', () => {
@@ -39,7 +40,7 @@ export function crudRepositoryTestSuite(
       withCrudCtx(function setupContext(ctx: CrudTestContext) {
         ctx.dataSourceOptions = dataSourceOptions;
         ctx.repositoryClass = repositoryClass;
-        ctx.connectorFeatures = features;
+        ctx.features = features;
       }),
     );
     before(
@@ -70,7 +71,7 @@ export function crudRepositoryTestSuite(
           suite.name,
           dataSourceOptions,
           'class ' + repositoryClass.name,
-          connectorFeatures,
+          features,
         );
         suite(dataSourceOptions, repositoryClass, features);
       }
