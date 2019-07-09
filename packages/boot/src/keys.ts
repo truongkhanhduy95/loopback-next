@@ -4,8 +4,8 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {BindingKey} from '@loopback/context';
-import {BootOptions} from './interfaces';
 import {Bootstrapper} from './bootstrapper';
+import {BootOptions} from './types';
 
 /**
  * Namespace for core binding keys
@@ -27,6 +27,9 @@ export namespace BootBindings {
     'application.bootstrapper',
   );
 
-  export const BOOTER_TAG = 'booter';
   export const BOOTER_PREFIX = 'booters';
+}
+
+export namespace BootTags {
+  export const BOOTER = 'booter';
 }

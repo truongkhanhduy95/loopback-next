@@ -3,7 +3,8 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Binding, Constructor} from '@loopback/context';
+import {bind, Binding, BindingSpec, Constructor} from '@loopback/context';
+import {BootTags} from './keys';
 
 /**
  * Type definition for ArtifactOptions. These are the options supported by
@@ -124,4 +125,16 @@ export interface Bootable {
    * @param booterClasses - A list of booter classes
    */
   booters(...booterClasses: Constructor<Booter>[]): Binding[];
+}
+
+/**
+ * `@booter` decorator
+ * @param artifactNamespace - Namespace for the artifact
+ * @param specs - Extra specs for the binding
+ */
+export function booter(artifactNamespace: string, ...specs: BindingSpec[]) {
+  return bind(
+    {tags: {artifactNamespace, [BootTags.BOOTER]: BootTags.BOOTER}},
+    ...specs,
+  );
 }
