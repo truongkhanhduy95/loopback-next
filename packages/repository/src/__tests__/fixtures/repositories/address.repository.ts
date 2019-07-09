@@ -29,7 +29,7 @@ export class AddressRepository extends DefaultCrudRepository<
     customerRepositoryGetter: Getter<CustomerRepository>,
   ) {
     super(Address, db);
-    this.customer = this._createBelongsToAccessorFor(
+    this.customer = this.createBelongsToAccessorFor(
       'customer',
       customerRepositoryGetter,
     );
