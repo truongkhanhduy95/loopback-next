@@ -4,12 +4,26 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {BindingFilter} from './binding-filter';
-import {BindingKey} from './binding-key';
+import {BindingAddress, BindingKey} from './binding-key';
 import {Context} from './context';
 import {ContextView} from './context-view';
 import {assertTargetType, inject, Injection, InjectionMetadata} from './inject';
 import {ResolutionSession} from './resolution-session';
 import {getDeepProperty, ValueOrPromise} from './value-promise';
+
+/**
+ * Injection metadata for `@config.*`
+ */
+export interface ConfigInjectionMetadata extends InjectionMetadata {
+  /**
+   * Path to retrieve the configuration of the target binding
+   */
+  configPath?: string;
+  /**
+   * Target binding key to override the current binding
+   */
+  targetBindingKey?: BindingAddress;
+}
 
 /**
  * Inject a property from `config` of the current binding. If no corresponding
@@ -44,8 +58,15 @@ import {getDeepProperty, ValueOrPromise} from './value-promise';
  * present, the `config` object will be returned.
  * @param metadata - Optional metadata to help the injection
  */
-export function config(configPath?: string, metadata?: InjectionMetadata) {
+export function config(
+  configPath?: string | ConfigInjectionMetadata,
+  metadata?: ConfigInjectionMetadata,
+) {
   configPath = configPath || '';
+  if (typeof configPath === 'object') {
+    metadata = configPath;
+    configPath = '';
+  }
   metadata = Object.assign(
     {configPath, decorator: '@config', optional: true},
     metadata,
@@ -60,10 +81,14 @@ export namespace config {
    * @param metadata - Injection metadata
    */
   export const getter = function injectConfigGetter(
-    configPath?: string,
-    metadata?: InjectionMetadata,
+    configPath?: string | ConfigInjectionMetadata,
+    metadata?: ConfigInjectionMetadata,
   ) {
     configPath = configPath || '';
+    if (typeof configPath === 'object') {
+      metadata = configPath;
+      configPath = '';
+    }
     metadata = Object.assign(
       {configPath, decorator: '@config.getter', optional: true},
       metadata,
@@ -78,10 +103,14 @@ export namespace config {
    * @param metadata - Injection metadata
    */
   export const view = function injectConfigView(
-    configPath?: string,
-    metadata?: InjectionMetadata,
+    configPath?: string | ConfigInjectionMetadata,
+    metadata?: ConfigInjectionMetadata,
   ) {
     configPath = configPath || '';
+    if (typeof configPath === 'object') {
+      metadata = configPath;
+      configPath = '';
+    }
     metadata = Object.assign(
       {configPath, decorator: '@config.view', optional: true},
       metadata,
@@ -111,7 +140,8 @@ function resolveFromConfig(
   injection: Injection,
   session: ResolutionSession,
 ): ValueOrPromise<unknown> {
-  const bindingKey = getCurrentBindingKey(session);
+  const bindingKey =
+    injection.metadata.targetBindingKey || getCurrentBindingKey(session);
   // Return `undefined` if no current binding is present
   if (!bindingKey) return undefined;
   const meta = injection.metadata;
@@ -133,7 +163,8 @@ function resolveAsGetterFromConfig(
   session: ResolutionSession,
 ) {
   assertTargetType(injection, Function, 'Getter function');
-  const bindingKey = getCurrentBindingKey(session);
+  const bindingKey =
+    injection.metadata.targetBindingKey || getCurrentBindingKey(session);
   // We need to clone the session for the getter as it will be resolved later
   const forkedSession = ResolutionSession.fork(session);
   const meta = injection.metadata;
@@ -159,7 +190,8 @@ function resolveAsViewFromConfig(
   session: ResolutionSession,
 ) {
   assertTargetType(injection, ContextView);
-  const bindingKey = getCurrentBindingKey(session);
+  const bindingKey =
+    injection.metadata.targetBindingKey || getCurrentBindingKey(session);
   // Return `undefined` if no current binding is present
   if (!bindingKey) return undefined;
   const view = new ConfigView(

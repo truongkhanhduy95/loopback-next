@@ -78,6 +78,47 @@ describe('Context bindings - injecting configuration for bound artifacts', () =>
     expect(server1.port).to.eql(3000);
   });
 
+  it('allows configPath for injection metadata', async () => {
+    class RestServerWithPort {
+      constructor(@config({configPath: 'port'}) public port: number) {}
+    }
+
+    // Bind configuration
+    ctx
+      .configure('servers.rest.server1')
+      .toDynamicValue(() => Promise.resolve({port: 3000}));
+
+    // Bind RestServer
+    ctx.bind('servers.rest.server1').toClass(RestServerWithPort);
+
+    // Resolve an instance of RestServer
+    // Expect server1.config to be `{port: 3000}
+    const server1 = await ctx.get<RestServerWithPort>('servers.rest.server1');
+    expect(server1.port).to.eql(3000);
+  });
+
+  it('allows targetBindingKey for injection metadata', async () => {
+    class RestServerWithPort {
+      constructor(
+        @config({configPath: 'port', targetBindingKey: 'restServer'})
+        public port: number,
+      ) {}
+    }
+
+    // Bind configuration
+    ctx
+      .configure('restServer')
+      .toDynamicValue(() => Promise.resolve({port: 3000}));
+
+    // Bind RestServer
+    ctx.bind('servers.rest.server1').toClass(RestServerWithPort);
+
+    // Resolve an instance of RestServer
+    // Expect server1.config to be `{port: 3000}
+    const server1 = await ctx.get<RestServerWithPort>('servers.rest.server1');
+    expect(server1.port).to.eql(3000);
+  });
+
   const LOGGER_KEY = 'loggers.Logger';
   it('injects a getter function to access config', async () => {
     class Logger {
@@ -109,6 +150,25 @@ describe('Context bindings - injecting configuration for bound artifacts', () =>
     // configGetter returns undefined as config is optional by default
     configObj = await logger.configGetter();
     expect(configObj).to.be.undefined();
+  });
+
+  it('injects a getter function with target binding to access config', async () => {
+    class MyService {
+      constructor(
+        @config.getter({targetBindingKey: LOGGER_KEY})
+        public configGetter: Getter<LoggerConfig | undefined>,
+      ) {}
+    }
+
+    // Bind logger configuration
+    ctx.configure(LOGGER_KEY).to({level: 'INFO'});
+
+    // Bind MyService
+    ctx.bind('services.MyService').toClass(MyService);
+
+    const myService = await ctx.get<MyService>('services.MyService');
+    const configObj = await myService.configGetter();
+    expect(configObj).to.eql({level: 'INFO'});
   });
 
   it('injects a view to access config', async () => {
@@ -158,6 +218,31 @@ describe('Context bindings - injecting configuration for bound artifacts', () =>
     ctx.configure(LOGGER_KEY).to({level: 'DEBUG'});
 
     level = await logger.configView.singleValue();
+    expect(level).to.eql('DEBUG');
+  });
+
+  it('injects a view to access config with target binding', async () => {
+    class MyService {
+      constructor(
+        @config.view({targetBindingKey: LOGGER_KEY, configPath: 'level'})
+        public configView: ContextView<string>,
+      ) {}
+    }
+
+    // Bind logger configuration
+    ctx.configure(LOGGER_KEY).to({level: 'INFO'});
+
+    // Bind MyService
+    ctx.bind('services.MyService').toClass(MyService);
+
+    const myService = await ctx.get<MyService>('services.MyService');
+    let level = await myService.configView.singleValue();
+    expect(level).to.eql('INFO');
+
+    // Update logger configuration
+    ctx.configure(LOGGER_KEY).to({level: 'DEBUG'});
+
+    level = await myService.configView.singleValue();
     expect(level).to.eql('DEBUG');
   });
 
