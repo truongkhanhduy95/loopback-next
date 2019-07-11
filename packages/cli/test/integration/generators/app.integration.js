@@ -242,3 +242,51 @@ describe('app-generator with default values', () => {
     build.clean(['node', 'run-clean', defaultValProjPath]);
   });
 });
+
+/** For testing the support of tilde path as the input of project path.
+ * Use differnt paths to test out the support of `~` when the test runs outside of home dir.
+ */
+describe('app-generator with tilde project path', () => {
+  const rootDir = path.join(__dirname, '../../../..');
+  // tildify the path:
+  let projPath = path.join(rootDir, 'sandbox/tilde-path-app');
+  let pathWithTilde = tildify(projPath);
+  let sandbox = projPath;
+
+  // If the test runs outside $home directory
+  if (process.env.CI && !process.env.DEBUG && tildify(projPath) === projPath) {
+    projPath = os.tmpdir();
+    pathWithTilde = '~/.lb4sandbox/tilde-path-app';
+    sandbox = path.join(os.homedir(), '.lb4sandbox/tilde-path-app');
+  }
+  const tildePathProps = {
+    name: 'tildified-path',
+    description: 'An app to test out tilde project path',
+    outdir: pathWithTilde,
+  };
+
+  before(async function() {
+    // Increase the timeout to accommodate slow CI build machines
+    // eslint-disable-next-line no-invalid-this
+    this.timeout(30 * 1000);
+    // check it with full path. tilde-path-app should not exist at this point
+    assert.equal(fs.existsSync(pathWithTilde), false);
+    await helpers
+      .run(generator)
+      .inDir(projPath)
+      // Mark it private to prevent accidental npm publication
+      .withOptions({private: true})
+      .withPrompts(tildePathProps);
+  });
+  it('scaffold a new application for tilde-path-app', async () => {
+    // tilde-path-app should be created at this point
+    assert.equal(fs.existsSync(sandbox), true);
+  });
+  after(function() {
+    // Increase the timeout to accommodate slow CI build machines
+    // eslint-disable-next-line no-invalid-this
+    this.timeout(30 * 1000);
+
+    build.clean(['node', 'run-clean', sandbox]);
+  });
+});

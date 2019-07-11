@@ -161,12 +161,13 @@ module.exports = class ProjectGenerator extends BaseGenerator {
           this.projectInfo.outdir == null ||
           // prompts if option was set to a directory that already exists
           utils.validateNotExisting(this.projectInfo.outdir) !== true,
-        validate: utils.validateNotExisting,
+        validate: input => utils.validateNotExisting(utils.untildify(input)),
         default: utils.toFileName(this.projectInfo.name),
       },
     ];
 
     return this.prompt(prompts).then(props => {
+      props.outdir = utils.untildify(props.outdir);
       Object.assign(this.projectInfo, props);
     });
   }
